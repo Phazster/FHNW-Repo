@@ -214,7 +214,136 @@ def schnittmenge_ebenen(koeffizienten_liste, ergebnisse_liste):
         }
 
 
+def finde_pivot_aus_gleichungen(koeffizienten_matrix, konstanten):
+    """
+    koeffizienten_matrix: Liste von Listen (die linken Seiten der Gleichungen)
+    konstanten: Liste der Werte auf der rechten Seite
+    """
+    # Matrix in SymPy Format umwandeln
+    A = sp.Matrix(koeffizienten_matrix)
+    b = sp.Matrix(konstanten)
+    
+    # Augmentierte Matrix (A|b) erstellen
+    M = A.row_join(b)
+    
+    # RREF berechnen: liefert (Reduzierte Matrix, Pivot-Spalten-Indizes)
+    m_rref, pivot_indices = M.rref()
+    
+    # Wichtig: Falls die letzte Spalte (die Konstanten) ein Pivot ist, 
+    # ist das System unlösbar (Widerspruch). Wir filtern das:
+    anzahl_variablen = A.cols
+    echte_pivots = [i for i in pivot_indices if i < anzahl_variablen]
+    
+    # Variablen-Namen zuordnen
+    vars = [f"x{i+1}" for i in range(anzahl_variablen)]
+    pivot_vars = [vars[i] for i in echte_pivots]
+    freie_vars = [vars[i] for i in range(anzahl_variablen) if i not in echte_pivots]
+    
+    return {
+        "pivot_variablen": pivot_vars,
+        "freie_variablen": freie_vars,
+        "rref_matrix": m_rref,
+        "loesbar": not (anzahl_variablen in pivot_indices)
+    }
 
+def spatprodukt_sympy(a, b, c):
+    """Berechnet das Spatprodukt für 3D Vektoren."""
+    vec_a = sp.Matrix(a)
+    vec_b = sp.Matrix(b)
+    vec_c = sp.Matrix(c)
+    
+    # Kreuzprodukt von a und b, dann Skalarprodukt mit c
+    return vec_a.cross(vec_b).dot(vec_c)
 
+def determinante(vektoren):
+    """Verallgemeinertes Spatprodukt (Volumen) im n-dimensionalen Raum."""
+    # Erstellt eine n x n Matrix aus den n Vektoren
+    M = sp.Matrix(vektoren)
+    return M.det()
+
+def analysiere_matrix(A_liste, printout = False):
+    A = sp.Matrix(A_liste)
+    n = A.rows
+    m = A.cols
+    
+    # 1. Determinante (nur bei quadratischen Matrizen)
+    det = None
+    if n == m:
+        det = A.det()
+        status = "Regulär (invertierbar)" if det != 0 else "Singulär (nicht invertierbar)"
+    else:
+        status = "Nicht quadratisch (keine Determinante definiert)"
+
+    # 2. Rang bestimmen
+    rang = A.rank()
+    
+    # 3. Kern (Nullraum / Homogene Lösung) finden
+    # Der Kern enthält die Vektoren, die beschreiben, wie der Raum "kollabiert"
+    kern = A.nullspace()
+    if printout:
+        print(f"Analyse der Matrix {(n,m)}:")
+        print(f"Status: {status}")
+        print(f"Rang: {rang} von maximal {(n,m)[0]}")
+        if determinante is not None:
+            print(f"Determinante: {determinante}")
+        
+        if kern:
+            print("\nDie Matrix ist singulär. Basis des Kerns (homogene Lösungen):")
+            for v in kern:
+                sp.pprint(v)
+        else:
+            print("\nDie Matrix ist regulär. Nur der Nullvektor löst das homogene System.")
+            
+    return {
+        "status": status,
+        "determinante": det,
+        "rang": rang,
+        "dimension": (n, m),
+        "ist_singulaer": det == 0 if n == m else None,
+        "kern_basis": kern
+    }
+
+import sympy as sp
+
+def check_mapping_properties(A_liste):
+    A = sp.Matrix(A_liste)
+    n_rows, n_cols = A.shape  # n_rows = Dimension des Zielraums, n_cols = Dimension des Definitionsraums
+    rang = A.rank()
+    
+    # Injektiv: Kern ist leer / Voller Spaltenrang
+    # Das bedeutet: Jeder Vektor wird auf ein eindeutiges Ziel abgebildet.
+    is_injective = (rang == n_cols)
+    
+    # Surjektiv: Bild ist der gesamte Zielraum / Voller Zeilenrang
+    # Das bedeutet: Jedes Ziel kann erreicht werden.
+    is_surjective = (rang == n_rows)
+    
+    # Bijektiv: Sowohl injektiv als auch surjektiv
+    # Nur bei quadratischen Matrizen mit vollem Rang möglich.
+    is_bijective = is_injective and is_surjective
+    
+    return {
+        "Dimension": f"R^{n_cols} -> R^{n_rows}",
+        "Rang": rang,
+        "Injektiv (eindeutig)": is_injective,
+        "Surjektiv (deckend)": is_surjective,
+        "Bijektiv (perfekt)": is_bijective,
+        "Kern_Dimension": n_cols - rang
+    }
+
+def check_orthogonalität(v1, v2):
+    # Numerisch mit NumPy
+    vec1 = np.array(v1)
+    vec2 = np.array(v2)
+    skalarprodukt = np.dot(vec1, vec2)
+    
+    # Symbolisch mit SymPy (für exakte Brüche/Wurzeln)
+    v1_s = sp.Matrix(v1)
+    v2_s = sp.Matrix(v2)
+    is_ortho = v1_s.dot(v2_s) == 0
+    
+    return {
+        "Skalarprodukt": skalarprodukt,
+        "Orthogonal":is_ortho}
 
 

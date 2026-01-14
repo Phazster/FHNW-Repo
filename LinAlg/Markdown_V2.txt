@@ -1,0 +1,91 @@
+# 🎓 Master-CheatSheet: Lineare Algebra & n-Dimensionale Geometrie
+
+Dieses Sheet kombiniert deine Custom-Library mit den mächtigsten Funktionen von **SymPy** (exakt) und **NumPy** (numerisch).
+
+---
+
+## 1. Matrix-Grundlagen & Anzeige
+| Befehl | Bibliothek | Beschreibung |
+| :--- | :--- | :--- |
+| `sp.pprint(M)` | SymPy | "Pretty Print" – Brüche und Wurzeln sauber anzeigen. |
+| `M.rref()` | SymPy | Reduzierte Stufenform & Pivot-Indizes (für Gauß-Lösungen). |
+| `M.T` / `M.transpose()` | Beides | Matrix transponieren (Spalten zu Zeilen). |
+| `M.inv()` / `np.linalg.inv()` | Beides | Inverse Matrix $A^{-1}$ berechnen (nur wenn regulär). |
+| `np.allclose(A, B)` | NumPy | Sicherer Vergleich von Matrizen (ignoriert Rundungsfehler). |
+| `np.dot(u, v)` / `u @ v` | NumPy | Skalarprodukt (numerisch). |
+| `M.det()` / `np.linalg.det(M)` | Beides | Berechnet die Determinante (Spatprodukt im n-D). |
+| `M.rank()` | SymPy | Anzahl der linear unabhängigen Zeilen/Spalten. |
+| `M.nullspace()` | SymPy | Findet die Basis der **homogenen Lösung** (Kern). |
+
+
+---
+
+## 2. Geometrie-Funktionen (Custom Library)
+* **Parameter ↔ Punkte:**
+    * `parameter_to_points(p, v)`: Wandelt Stützvektor und Richtungsvektor in zwei Punkte um.
+    * `points_to_parameter(P1, P2)`: Erzeugt $\vec{p}$ und Richtungsvektor $\vec{v}$ aus zwei Punkten.
+* **Parameter ↔ Koordinate (n-Dimensionen):**
+    * `parameter_to_coordinate(p, [v1, v2...])`: Erzeugt die Normalengleichung $a_1x_1 + \dots + a_nx_n = d$.
+    * `coordinate_to_parameter(coeffs, d)`: Erzeugt Stütz- und Richtungsvektoren aus der Koordinatenform.
+* **Normalenform (Speziell):**
+    * `normal_to_coordinate(n, p0)`: Berechnet das $c$ für $\vec{n} \cdot \vec{x} + c = 0$.
+    * `points_to_normal_2d(P1, P2)`: Erzeugt Normalenvektor im $\mathbb{R}^2$ durch Komponenten-Tausch.
+* **Metrik & Winkel:**
+    * `angle_between_sympy(u, v)`: Winkel im $n$-D Raum (in Grad).
+    * `check_orthogonalität(v1, v2)`: Prüft, ob $u \cdot v = 0$ (90° Winkel).
+    * `spatprodukt_sympy(a, b, c)`: Volumen im $\mathbb{R}^3$.
+    * `determinante(vektoren)`: $n$-dimensionales Volumen (Determinante).
+
+
+
+---
+
+## 3. LGS, Schnittmengen & Kerne
+
+
+* **Gauß-Verfahren:**
+    * `solve_gauss_sympy(A, b)`: Führt den Gauß-Jordan-Algorithmus auf der augmentierten Matrix $(A|b)$ aus.
+* **Schnittmengen finden:**
+    * `schnittmenge_ebenen(As, bs)`: Berechnet die Schnittmenge von $n$ Hyperebenen.
+        * **Eindeutig:** Gibt den Punkt zurück.
+        * **Unterraum:** Gibt Dictionary mit Stützvektor und Richtungsvektoren zurück.
+
+
+---
+
+## 4. Fortgeschrittene Matrix-Analyse
+* **Eigenwerte & Vektoren:**
+    * `M.eigenvals()`: Gibt Eigenwerte $\lambda$ und deren Häufigkeit zurück.
+    * `M.eigenvects()`: Gibt Eigenwerte, Häufigkeit und die zugehörigen **Eigenvektoren** zurück.
+* **Vektorraum-Basis:**
+    * `M.columnspace()`: Basisvektoren des Bildraums (Spaltenraum).
+    * `sp.gram_schmidt([v1, v2...])`: Erzeugt eine **Orthogonalbasis** aus beliebigen Vektoren.
+* **Normen & Längen:**
+    * `v.norm()` / `np.linalg.norm(v)`: Betrag/Länge eines Vektors $|\vec{v}|$.
+    * `v.normalized()`: Erzeugt den Einheitsvektor (Länge = 1).
+* **Analyse:**
+    * `finde_pivot_aus_gleichungen(A, b)`: Trennt Pivot-Variablen von freien Parametern.
+    * `analysiere_matrix(A)`: Checkt Rang, Determinante und Singularität.
+
+
+
+---
+
+## 5. Abbildungseigenschaften & Zerlegung
+* **`check_mapping_properties(A)`**:
+    * **Injektiv:** Eindeutige Abbildung (Rang = Spalten).
+    * **Surjektiv:** Zielraum voll abgedeckt (Rang = Zeilen).
+    * **Bijektiv:** Perfekte Umkehrbarkeit (Rang = Zeilen = Spalten).
+* **Zerlegungen (Decompositions):**
+    * `M.LUdecomposition()`: Zerlegt Matrix in L (Lower) und U (Upper) Dreiecksmatrizen.
+    * `np.linalg.svd(A)`: Singulärwertzerlegung (für Stabilitätsanalyse im n-D).
+
+
+
+---
+
+## 💡 Quick-Check Strategie für die Prüfung
+1. **Gibt es eine Lösung?** Prüfe `M.rank()`. Ist der Rang der Matrix gleich dem Rang der erweiterten Matrix $(A|b)$?
+2. **Ist die Lösung eindeutig?** Wenn `Rang == Anzahl Variablen`, dann ja. Wenn `Rang < Variablen`, gibt es freie Parameter.
+3. **Ist die Matrix "kaputt"?** Wenn `det(A) == 0`, ist sie **singulär** (nicht invertierbar).
+4. **Stehen sie senkrecht?** Prüfe `u.dot(v) == 0`.
