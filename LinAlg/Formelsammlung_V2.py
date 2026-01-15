@@ -916,3 +916,53 @@ def check_linearity(expr_list, vars_list):
     is_homogeneous = sp.simplify(f_c_u - c_f_u) == sp.zeros(*f_c_u.shape)
 
     return is_additive and is_homogeneous
+
+    
+def solve_system_to_rref(equations, vars_list):
+    """
+    Überführt ein n-dimensionales lineares Gleichungssystem in die 
+    normierte Zeilenstufenform (RREF) und berechnet die Lösung.
+
+    Die Funktion wandelt eine Liste von Gleichungen in eine Matrixform (Ax = b) um
+    und nutzt den Gauß-Jordan-Algorithmus zur Berechnung der RREF.
+
+    Args:
+        equations (list): Liste von SymPy-Gleichungen oder Ausdrücken.
+            Ausdrücke wie 'x + y' werden implizit als 'x + y = 0' behandelt.
+            Gleichungen werden mit sp.Eq(links, rechts) definiert.
+        vars_list (list): Liste der SymPy-Symbole, nach denen aufgelöst werden soll.
+            Beispiel: [x, y, z].
+
+    Returns:
+        tuple: Ein Tupel bestehend aus:
+            - rref_matrix (sp.Matrix): Die erweiterte Koeffizientenmatrix in RREF.
+            - pivots (tuple): Indizes der Pivot-Spalten.
+            - solution (dict): Ein Dictionary mit den Werten der Variablen.
+
+    Raises:
+        TypeError: Wenn die Eingabeparameter keine Listen sind.
+        ValueError: Wenn die Anzahl der Variablen nicht mit dem System übereinstimmt.
+
+    Example:
+        >>> x, y, z = sp.symbols('x y z')
+        >>> eq1 = sp.Eq(x + y + z, 6)
+        >>> eq2 = sp.Eq(2*y + 5*z, -4)
+        >>> eq3 = sp.Eq(2*x + 5*y - z, 27)
+        >>> rref, pivots, sol = solve_system_to_rref([eq1, eq2, eq3], [x, y, z])
+    """
+    if not isinstance(equations, list) or not isinstance(vars_list, list):
+        raise TypeError("Sowohl equations als auch vars_list müssen Listen sein.")
+
+    # 1. Erstelle die erweiterte Koeffizientenmatrix (A|b)
+    # linear_eq_to_matrix trennt die Koeffizienten (A) von den Konstanten (b)
+    A, b = sp.linear_eq_to_matrix(equations, *vars_list)
+    augmented_matrix = A.row_join(b)
+
+    # 2. Berechne die normierte Zeilenstufenform (RREF)
+    # rref() gibt ein Tupel zurück: (Matrix, Pivot-Indizes)
+    rref_matrix, pivots = augmented_matrix.rref()
+
+    # 3. Berechne die explizite Lösung für die Variablen
+    solution = sp.solve(equations, vars_list)
+
+    return rref_matrix, pivots, solution
