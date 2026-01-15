@@ -16,7 +16,7 @@ Dieses Sheet kombiniert deine Custom-Library mit den mächtigsten Funktionen von
 | `M.det()` / `np.linalg.det(M)` | Beides | Berechnet die Determinante (Spatprodukt im n-D). |
 | `M.rank()` | SymPy | Anzahl der linear unabhängigen Zeilen/Spalten. |
 | `M.nullspace()` | SymPy | Findet die Basis der **homogenen Lösung** (Kern). |
-| `sp.evalf()` | SymPy | Diese Methode zwingt SymPy, den exakten Ausdruck numerisch auszuwerten. |
+| `.evalf()` | SymPy | Diese Methode zwingt SymPy, den exakten Ausdruck numerisch auszuwerten. |
 
 
 ---
