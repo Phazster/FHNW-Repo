@@ -16,6 +16,7 @@ Dieses Sheet kombiniert deine Custom-Library mit den mächtigsten Funktionen von
 | `M.det()` / `np.linalg.det(M)` | Beides | Berechnet die Determinante (Spatprodukt im n-D). |
 | `M.rank()` | SymPy | Anzahl der linear unabhängigen Zeilen/Spalten. |
 | `M.nullspace()` | SymPy | Findet die Basis der **homogenen Lösung** (Kern). |
+| `sp.evalf()` | SymPy | Diese Methode zwingt SymPy, den exakten Ausdruck numerisch auszuwerten. |
 
 
 ---
@@ -84,8 +85,30 @@ Dieses Sheet kombiniert deine Custom-Library mit den mächtigsten Funktionen von
 
 ---
 
+## 6. Projektion & Lot (Abstände)
+* **Konzept:** Zerlegung von $\vec{v}$ in einen Anteil parallel zu $\vec{u}$ und einen senkrechten Anteil (Lot).
+* **Projektion:** `v_proj = (v.dot(u) / u.dot(u)) * u`
+* **Lot (Abstandsvektor):** `v_lot = v - v_proj`
+* **Abstand (Skalar):** `abstand = (v - v_proj).norm()`
+
+
+
+---
+
+## 7. Spiegelung Punkt an Gerade
+* **Eingabe:** Punkt $P$, Gerade mit Stützvektor $A$ und Richtungsvektor $\vec{v}$.
+* **Schritt 1 (Lotfußpunkt $F$):** `AP = P - A`
+  `F = A + (AP.dot(v) / v.dot(v)) * v`
+* **Schritt 2 (Spiegelpunkt $P'$):**
+  `P_strich = 2 * F - P`
+* **Logik:** Man berechnet den Punkt auf der Geraden, der $P$ am nächsten liegt ($F$), und "springt" über diesen Punkt hinaus auf die andere Seite.
+
+
+---
+
 ## 💡 Quick-Check Strategie für die Prüfung
 1. **Gibt es eine Lösung?** Prüfe `M.rank()`. Ist der Rang der Matrix gleich dem Rang der erweiterten Matrix $(A|b)$?
 2. **Ist die Lösung eindeutig?** Wenn `Rang == Anzahl Variablen`, dann ja. Wenn `Rang < Variablen`, gibt es freie Parameter.
 3. **Ist die Matrix "kaputt"?** Wenn `det(A) == 0`, ist sie **singulär** (nicht invertierbar).
 4. **Stehen sie senkrecht?** Prüfe `u.dot(v) == 0`.
+
