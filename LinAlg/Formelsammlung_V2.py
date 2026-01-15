@@ -854,3 +854,65 @@ def spiegel_punkt_an_gerade(punkt_P, stuetz_G, richtung_G):
     
     return P_spiegel
 
+def check_linearity(expr_list, vars_list):
+    """
+    Überprüft die Linearität einer mathematischen Abbildung f: V -> W.
+
+    Die Funktion nutzt symbolisches Rechnen, um die zwei Kernbedingungen 
+    einer linearen Abbildung zu validieren:
+    1. Additivität: f(u + v) = f(u) + f(v)
+    2. Homogenität: f(c * u) = c * f(u)
+
+    Args:
+        expr_list (list): Eine Liste von SymPy-Ausdrücken, die die Zielkomponenten 
+            der Abbildung definieren (Dimension von W). 
+            Beispiel: [x + y, z] für eine Abbildung in den R2.
+        vars_list (list): Eine Liste von SymPy-Symbolen, die die Eingangs-
+            variablen darstellen (Dimension von V).
+            Beispiel: [x, y, z] für eine Abbildung aus dem R3.
+
+    Returns:
+        bool: True, wenn die Abbildung linear ist, andernfalls False.
+
+    Raises:
+        TypeError: Wenn die Eingabeparameter keine Listen sind.
+        ValueError: Wenn die vars_list leer ist.
+
+    Example:
+        >>> x, y = sp.symbols('x y')
+        >>> # Prüfe f(x, y) = (x + y, x)
+        >>> check_linearity([x + y, x], [x, y])
+        True
+        >>> # Prüfe f(x) = x**2
+        >>> check_linearity([x**2], [x])
+        False
+    """
+    if not isinstance(expr_list, list) or not isinstance(vars_list, list):
+        raise TypeError("Sowohl expr_list als auch vars_list müssen Listen sein.")
+    
+    if len(vars_list) == 0:
+        raise ValueError("Die Liste der Variablen darf nicht leer sein.")
+
+    # Symbole für Skalar und Testvektoren erzeugen
+    c = sp.symbols('c')
+    u = [sp.symbols(f'u{i}') for i in range(len(vars_list))]
+    v = [sp.symbols(f'v{i}') for i in range(len(vars_list))]
+    
+    def apply_f(vectors):
+        """Hilfsfunktion zum Ersetzen der Variablen durch Testvektor-Komponenten."""
+        subs_dict = {vars_list[i]: vectors[i] for i in range(len(vars_list))}
+        return sp.Matrix([expr.subs(subs_dict) for expr in expr_list])
+
+    # Berechnung der Bedingungen
+    f_u_plus_v = apply_f([u[i] + v[i] for i in range(len(vars_list))])
+    f_u_plus_f_v = apply_f(u) + apply_f(v)
+    
+    f_c_u = apply_f([c * u[i] for i in range(len(vars_list))])
+    c_f_u = c * apply_f(u)
+
+    # Vergleich durch Vereinfachung der Differenz
+    # (Ergebnis muss eine Nullmatrix sein)
+    is_additive = sp.simplify(f_u_plus_v - f_u_plus_f_v) == sp.zeros(*f_u_plus_v.shape)
+    is_homogeneous = sp.simplify(f_c_u - c_f_u) == sp.zeros(*f_c_u.shape)
+
+    return is_additive and is_homogeneous
